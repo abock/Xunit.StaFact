@@ -7,6 +7,7 @@ namespace Xunit.Sdk
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Diagnostics;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit.Abstractions;
@@ -60,7 +61,6 @@ namespace Xunit.Sdk
             /// </summary>
             Portable,
 
-#if NETFRAMEWORK || NETCOREAPP
             /// <summary>
             /// Use the <see cref="System.Windows.Threading.DispatcherSynchronizationContext"/>, which is only available on Desktop.
             /// </summary>
@@ -70,7 +70,7 @@ namespace Xunit.Sdk
             /// Use the <see cref="System.Windows.Forms.WindowsFormsSynchronizationContext"/>, which is only available on Desktop.
             /// </summary>
             WinForms,
-#endif
+
         }
 
         private SyncContextAdapter Adapter => GetAdapter(this.synchronizationContextType);
@@ -98,6 +98,9 @@ namespace Xunit.Sdk
             return new UITestCaseRunner(this, this.DisplayName, this.SkipReason, constructorArguments, this.TestMethodArguments, messageBus, aggregator, cancellationTokenSource, this.Adapter).RunAsync();
         }
 
+        static readonly Dictionary<SyncContextType, SyncContextAdapter> reflectedAdapters
+            = new Dictionary<SyncContextType, SyncContextAdapter>();
+
         internal static SyncContextAdapter GetAdapter(SyncContextType syncContextType)
         {
             switch (syncContextType)
@@ -107,14 +110,52 @@ namespace Xunit.Sdk
 
                 case SyncContextType.Portable:
                     return UISynchronizationContext.Adapter.Default;
-#if NETFRAMEWORK || NETCOREAPP
-                case SyncContextType.WPF:
-                    return DispatcherSynchronizationContextAdapter.Default;
-
-                case SyncContextType.WinForms:
-                    return WinFormsSynchronizationContextAdapter.Default;
-#endif
+                
                 default:
+                    lock (reflectedAdapters)
+                    {
+                        if (reflectedAdapters.TryGetValue(syncContextType, out var syncContextAdapter))
+                        {
+                            return syncContextAdapter;
+                        }
+                    }
+
+                    foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        var attrs = asm.GetCustomAttributes(
+                            typeof(SyncContextAdapterAttribute),
+                            inherit: false);
+
+                        if (attrs != null &&
+                            attrs.Length > 0 &&
+                            attrs[0] is SyncContextAdapterAttribute attr &&
+                            attr.SyncContextType == syncContextType)
+                        {
+                            var field = attr.SyncContextAdapterType.GetField(
+                                "Default",
+                                BindingFlags.Static | BindingFlags.NonPublic);
+
+                            if (field == null)
+                            {
+                                throw new NotSupportedException(
+                                    $"{syncContextType} does not have a static Default field.");
+                            }
+
+                            if (field.GetValue(null) is SyncContextAdapter syncContextAdapter)
+                            {
+                                lock (reflectedAdapters)
+                                {
+                                    reflectedAdapters[syncContextType] = syncContextAdapter;
+                                }
+
+                                return syncContextAdapter;
+                            }
+
+                            throw new NotSupportedException(
+                                $"{syncContextType}.Default did not return an instance of {typeof(SyncContextAdapter)}");
+                        }
+                    }
+
                     throw new NotSupportedException("Unsupported type of SynchronizationContext.");
             }
         }
