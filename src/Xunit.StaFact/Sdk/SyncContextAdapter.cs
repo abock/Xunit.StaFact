@@ -39,6 +39,11 @@ namespace Xunit.Sdk
         /// <param name="work">The async delegate.</param>
         internal abstract void Run(Func<Task> work);
 
+        internal virtual object Run(Func<object> work)
+        {
+            return work();
+        }
+
         /// <summary>
         /// Pumps messages until a task completes.
         /// </summary>

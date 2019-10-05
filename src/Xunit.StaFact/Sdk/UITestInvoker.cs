@@ -128,7 +128,7 @@ namespace Xunit.Sdk
                         }
                         else
                         {
-                            var result = this.CallTestMethod(testClassInstance);
+                            var result = this.adapter.Run(() => this.CallTestMethod(testClassInstance));
                             var task = result as Task;
                             if (task != null)
                             {
