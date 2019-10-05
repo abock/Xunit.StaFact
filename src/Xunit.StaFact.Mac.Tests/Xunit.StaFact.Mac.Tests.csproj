@@ -1,0 +1,24 @@
+﻿<Project Sdk="Xamarin.Mac.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <CodeAnalysisRuleSet>..\Xunit.StaFact\Xunit.StaFact.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>CS1591;CS1701;$(NoWarn)</NoWarn>
+    <IsPackable>false</IsPackable>
+
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1105</MSBuildWarningsAsMessages>
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1106</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.runner.console" Version="2.4.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xunit.StaFact\Xunit.StaFact.csproj" />
+    <ProjectReference Include="..\Xunit.StaFact.Mac\Xunit.StaFact.Mac.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="$(XunitConsole472Path)" />
+  </ItemGroup>  
+</Project>

@@ -62,15 +62,19 @@ namespace Xunit.Sdk
             Portable,
 
             /// <summary>
-            /// Use the <see cref="System.Windows.Threading.DispatcherSynchronizationContext"/>, which is only available on Desktop.
+            /// Use the <see cref="System.Windows.Threading.DispatcherSynchronizationContext"/>, which is only available on Windows.
             /// </summary>
             WPF,
 
             /// <summary>
-            /// Use the <see cref="System.Windows.Forms.WindowsFormsSynchronizationContext"/>, which is only available on Desktop.
+            /// Use the <see cref="System.Windows.Forms.WindowsFormsSynchronizationContext"/>, which is only available on Windows.
             /// </summary>
             WinForms,
 
+            /// <summary>
+            /// Use a <see cref="SynchronizationContext"/> running on <see cref="Foundation.NSRunLoop.Main"/> which is only available on macOS.
+            /// </summary>
+            Cocoa,
         }
 
         private SyncContextAdapter Adapter => GetAdapter(this.synchronizationContextType);

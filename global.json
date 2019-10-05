@@ -1,5 +1,8 @@
 {
   "sdk": {
     "version": "3.0.100"
+  },
+  "msbuild-sdks": {
+    "Xamarin.Mac.Sdk": "0.29.0"
   }
 }
