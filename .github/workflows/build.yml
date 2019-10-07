@@ -21,8 +21,16 @@ jobs:
           sudo installer -pkg dep.pkg -target / -verboseR
         done
     - name: Restore
-      run: msbuild /t:Restore src/Xunit.StaFact.Mac.sln
+      run: msbuild /t:Restore /p:Configuration=Release src/Xunit.StaFact.Mac.sln
     - name: Build
-      run: msbuild /t:Build src/Xunit.StaFact.Mac.sln
+      run: msbuild /t:Build /p:Configuration=Release src/Xunit.StaFact.Mac.sln
     - name: Pack
-      run: msbuild /t:Pack src/Xunit.StaFact.Mac.sln
+      run: msbuild /t:Pack /p:Configuration=Release /p:NoBuild=true src/Xunit.StaFact.Mac.sln
+    - name: Push
+      env:
+        MYGET_ABOCK_PUSH_TOKEN: ${{ secrets.MYGET_ABOCK_PUSH_TOKEN }}
+      run: |
+        set -ex
+        for pkg in bin/Packages/Release/*.nupkg; do
+          nuget push "$pkg" "$MYGET_ABOCK_PUSH_TOKEN" -Source https://www.myget.org/F/abock-xunit-stafact/api/v2/package
+        done
