@@ -28,4 +28,11 @@ public class CocoaFactTests
         NSApplication.EnsureUIThread();
         await Task.Delay(100);
     }
+
+    [CocoaFact]
+    public void AssertExceptionsAreCaptured()
+    {
+        NSApplication.EnsureUIThread();
+        throw new System.Exception("Thrown from Main");
+    }
 }

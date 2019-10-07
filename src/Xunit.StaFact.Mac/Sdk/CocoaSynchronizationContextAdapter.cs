@@ -36,19 +36,44 @@ namespace Xunit.Sdk
         internal override object Run(Func<object> work)
         {
             object result = null;
+            Exception exception = null;
+
             NSRunLoop.Main.InvokeOnMainThread(() =>
             {
-                result = work();
+                try
+                {
+                    result = work();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
             });
+
+            if (exception != null)
+                throw exception;
+
             return result;
         }
 
         internal override void Run(Func<Task> work)
         {
+            Exception exception = null;
+
             NSRunLoop.Main.InvokeOnMainThread(() =>
             {
-                work().GetAwaiter().GetResult();
+                try
+                {
+                    work().GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
             });
+
+            if (exception != null)
+                throw exception;
         }
     }
 }

@@ -128,7 +128,25 @@ namespace Xunit.Sdk
                         }
                         else
                         {
-                            var result = this.adapter.Run(() => this.CallTestMethod(testClassInstance));
+                            object result = null;
+
+                            try
+                            {
+                                result = this.adapter.Run(() => this.CallTestMethod(testClassInstance));
+                            }
+                            catch (AggregateException ex)
+                            {
+                                this.Aggregator.Add(ex.Flatten().InnerException ?? ex);
+                            }
+                            catch (TargetInvocationException ex)
+                            {
+                                this.Aggregator.Add(ex.InnerException ?? ex);
+                            }
+                            catch (Exception ex)
+                            {
+                                this.Aggregator.Add(ex);
+                            }
+
                             var task = result as Task;
                             if (task != null)
                             {
