@@ -9,6 +9,17 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: Provision
+      run: |
+        set -ex
+        PKGS=(
+          https://download.visualstudio.microsoft.com/download/pr/09c1d43c-1960-485c-8e2a-d202d5278c4f/3dc3456c54003451fb2e03201bfdb842/monoframework-mdk-6.4.0.198.macos10.xamarin.universal.pkg
+          https://download.visualstudio.microsoft.com/download/pr/54b422d1-7448-4c23-a8dd-f6db04641531/b83dc3119d4c49f3922ff286128b4874/xamarin.mac-6.2.0.42.pkg
+        )
+        for url in "${PKGS[@]}"; do
+          curl -L -o dep.pkg "$url"
+          sudo installer -pkg dep.pkg -target / -verboseR
+        done
     - name: Restore
       run: msbuild /t:Restore src/Xunit.StaFact.Mac.sln
     - name: Build
