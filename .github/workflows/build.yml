@@ -1,0 +1,17 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: macOS-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Restore
+      run: msbuild /t:Restore src/Xunit.StaFact.Mac.sln
+    - name: Build
+      run: msbuild /t:Build src/Xunit.StaFact.Mac.sln
+    - name: Pack
+      run: msbuild /t:Pack src/Xunit.StaFact.Mac.sln
